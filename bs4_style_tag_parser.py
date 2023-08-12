@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import re
 
+regex1 = r'\s*@media\s+[^{}]+\{(?:[^{}]+\{[^{}]*\})*\s*\}' # for @media block
+regex2 =  r"\s*[^{}]+\{[^{}]+\}" # for normal block
 
 def get_soup(html):
     try:
@@ -8,70 +10,113 @@ def get_soup(html):
         return soup
     except:
         return None
+    
+def get_css_blocks(style_block: str) -> list:
+    
+    striped = re.sub(r"[\n ]+", " ", style_block.string.strip())
+    
+    return re.findall(regex1 + '|' + regex2, striped, re.IGNORECASE)
+    
+def is_media_block(block: str) -> bool:
+    return block.strip().startswith("@media")
+
+def get_normal_css_blocks(parent_block: str) -> list:
+    return re.findall(regex2, parent_block, re.IGNORECASE)
+
+def get_media_selector(media_block: str) -> str:
+    return re.findall(r"@media\s+[^{}]+", media_block, re.IGNORECASE)[0].strip()
+
+def parse_css_block(block: str) -> list:
+    
+    selectors, attrs = re.sub(r"}", "", block).split('{')
+    
+    selector_list = list(map(lambda selector: selector.strip(), selectors.split(',')))
+    
+    props = []
+    
+    for attr in attrs.split(';'):
+        
+        if not attr.strip():
+            continue
+        
+        colon_index = attr.index(":")
+        
+        key = attr[0:colon_index].strip()
+        
+        value = attr[colon_index + 1:].strip()
+        
+        props.append({
+            "key": key,
+            "value": value
+        })
+    
+    return [selector_list, props]
+            
+def should_write_css(parent_block: dict, selector: str, key: str, value: str) -> bool:
+    return not parent_block[selector].get(key) \
+        or parent_block[selector][key].find("!important") == -1 \
+        or value.find("!important") != -1
+
 
 def main(soup):
     css_attributes = {}
-    regex1 = r'\s*@media\s+[^{}]+\{(?:[^{}]+\{[^{}]*\})*\s*\}' # for @media block
-    regex2 =  r"\s*[^{}]+\{[^{}]+\}" # for normal block
     
     style_tags = soup.find_all('style')
+    
     for style_tag in style_tags:
-        
-        css_text = re.sub(r"[\n ]+", " ", style_tag.string.strip())
 
-        matches = re.findall(regex1 + '|' + regex2, css_text, re.IGNORECASE)
+        blocks = get_css_blocks(style_tag)
 
-        if not matches:
+        if not blocks:
             continue
 
-        for match in matches:
-            if match.strip().startswith("@media"):
-                inner_media_matches = re.findall(regex2, match.strip(), re.IGNORECASE)
+        for match in blocks:
+            match = match.strip()
+            if is_media_block(match):
+                child_blocks = get_normal_css_blocks(match)
                 
-                media_key = re.findall(r"@media\s+[^{}]+", match.strip(), re.IGNORECASE)[0].strip()
-                if not css_attributes.get(media_key):
-                    css_attributes[media_key] = {}
+                media = get_media_selector(match)
+                
+                if not css_attributes.get(media):
+                    css_attributes[media] = {}
                     
-                for inner_media_match in inner_media_matches:
-                    inner_media_match = re.sub(r"}", "", inner_media_match)
+                for child_block in child_blocks:
                     
-                    selectors, attrs = inner_media_match.split('{')
-                    selector_list = selectors.split(',')
-                    for selector in selector_list:
-                        selector = selector.strip()
-                        if not selector:
+                    selectors, attrs = parse_css_block(child_block)
+                    
+                    for s in selectors:
+                        
+                        if not s:
                             continue
-                        if not css_attributes[media_key].get(selector):
-                            css_attributes[media_key][selector] = {}
-                        attr_list = attrs.split(';')
-                        for attr in attr_list:
-                            if not attr.strip():
-                                continue
-                            attr = attr
-                            colon_index = attr.index(":")
-                            attr_name = attr[0:colon_index].strip()
-                            attr_value = attr[colon_index + 1:].strip()
-                            if not css_attributes[media_key][selector].get(attr_name) or css_attributes[media_key][selector].get(attr_name).find("!important") != -1:
-                                css_attributes[media_key][selector][attr_name] = attr_value
+                        
+                        if not css_attributes[media].get(s):
+                            css_attributes[media][s] = {}
+                            
+                        for attr in attrs:
+                            
+                            if should_write_css(css_attributes[media], s, attr["key"], attr["value"]):
+
+                                css_attributes[media][s][attr["key"]] = attr["value"]
             else:
-                match = re.sub(r"}", "", match)
-                selectors, attrs = match.split('{')
-                selector_list = selectors.split(',')
-                for selector in selector_list:
-                    selector = selector.strip()
-                    if not selector:
-                        continue
-                    if not css_attributes.get(selector):
-                        css_attributes[selector] = {}
-                    attr_list = attrs.split(';')
-                    for attr in attr_list:
-                        if not attr.strip():
-                            continue
-                        attr = attr
-                        colon_index = attr.index(":")
-                        attr_name = attr[0:colon_index].strip()
-                        attr_value = attr[colon_index + 1:].strip()
-                        if not css_attributes[selector].get(attr_name) or css_attributes[selector].get(attr_name).find("!important") != -1:
-                            css_attributes[selector][attr_name] = attr_value
+                selectors, attrs = parse_css_block(match)
+                
+                for s in selectors:
+                
+                    if not css_attributes.get(s):
+                        css_attributes[s] = {}
+                        
+                    for attr in attrs:
+                        
+                        if should_write_css(css_attributes, s, attr["key"], attr["value"]):
+                                
+                            css_attributes[s][attr["key"]] = attr["value"]
     
     return css_attributes
+
+file = open("draft.html", "r")
+html = file.read()
+soup = get_soup(html)
+result = main(soup)
+
+for css in result:
+    print(css, result[css])

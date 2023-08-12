@@ -19,4 +19,3 @@ def check(process_output, judge_output, judge_input, point_value, submission_sou
     else:
         return CheckerResult(False, 0, "Nội dung thẻ h1 phải là CatPhotoApp")
         
-    return CheckerResult(False, 0, "Lỗi checker")
