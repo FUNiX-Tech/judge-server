@@ -1,8 +1,9 @@
 # judge-server
 
-- Copy file HTML.py vào thư mục judge/dmoj/executors của docker.
-- Cài bs4 cho docker: (DMOJ) pip install beautifulsoup4
-- \_cptbox.pyx là để fix tạm thời lỗi cài đặt judge-server nếu có lỗi xảy ra liên quan cython.
+- Copy file `HTML.py` vào thư mục `docker:/judge/dmoj/executors`.
+- Cài bs4 cho docker: `(DMOJ) pip install beautifulsoup4`
+- `\_cptbox.pyx` là để fix tạm thời lỗi cài đặt judge-server nếu có lỗi xảy ra liên quan `cython`.
+- Copy file `css_parser.py` vào `docker:/judge/dmoj/utils`
 
 # Hướng dẫn cách viết file chấm html:
 
@@ -17,11 +18,11 @@ Ví dụ 1 problem, có code là `problem01`:
 - Criteria 1: "Thẻ h1 có nội dung 'Hello world'"
 - Criteria 2: "Thẻ h2 có nội dung 'Cat'"
 
-Cách tạo problem trên:
+## Cách tạo problem trên:
 
-1. Tạo folder có tên `problem01`
+### 1. Tạo folder có tên `problem01`
 
-2. Trong folder vừa tạo, tạo file init.yml có nội dung như sau:
+### 2. Trong folder vừa tạo, tạo file init.yml có nội dung như sau:
 
 ```yml
 checker: problem01.py # tên file checker
@@ -31,14 +32,14 @@ test_cases:
   - { in: problem01.2.in, points: 50 } # tương tự
 ```
 
-3. Tạo file chứa nội dung criteria:
+### 3. Tạo file chứa nội dung criteria:
 
 - `problem01.1.in` với nội dung `Thẻ h1 có nội dung 'Hello world'`
 - `problem01.2.in` với nội dung `Thẻ h2 có nội dung 'Cat'`
 
 Nén 2 file trên dưới dạng đuôi `.zip`: `problem01.zip`.
 
-4. Viết file checker:
+### 4. Viết file checker:
 
 Tạo file problem01.py với nội dung như sau:
 
@@ -94,7 +95,7 @@ Có thể check kỹ hơn.
 - Tham số thứ 2: Điểm số thí sinh.
 - Tham số thú 3: Nhận xét
 
-5. Hoàn tất
+### 5. Hoàn tất
 
 Copy vào thư mục `problem01` vào thư mục chứa problem data `problems`.
 Vào path `/problem/problem01` click `Upate problem data (beta)` để cập nhật nội dung criterias cho problem.
