@@ -58,7 +58,7 @@ def should_write_css(parent_block: dict, selector: str, key: str, value: str) ->
         or value.find("!important") != -1
 
 
-def main(soup):
+def parse_css(soup):
     css_attributes = {}
     
     style_tags = soup.find_all('style')
@@ -113,10 +113,3 @@ def main(soup):
     
     return css_attributes
 
-file = open("draft.html", "r")
-html = file.read()
-soup = get_soup(html)
-result = main(soup)
-
-for css in result:
-    print(css, result[css])
