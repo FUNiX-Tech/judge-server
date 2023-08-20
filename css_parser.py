@@ -11,9 +11,9 @@ def get_soup(html):
     except:
         return None
     
-def _get_css_blocks(style_block: str) -> list:
-    
-    striped = re.sub(r"[\n ]+", " ", style_block.string.strip())
+def _get_css_blocks(style_block) -> list:
+
+    striped = "" if style_block.string is None else re.sub(r"[\n\r\t ]+", " ", style_block.string.strip())
     
     return re.findall(regex1 + '|' + regex2, striped, re.IGNORECASE)
     
@@ -132,7 +132,7 @@ def parse_inline_css(tag):
     if inline_css is None:
         return css_attributes
 
-    inline_css = re.sub(r"[\n ]+", " ", inline_css)
+    inline_css = re.sub(r"[\n\r\t ]+", " ", inline_css)
     
     for attr in inline_css.split(';'):
         if not attr.strip():
