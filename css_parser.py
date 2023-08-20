@@ -14,7 +14,7 @@ def get_soup(html):
 def _get_css_blocks(style_block) -> list:
 
     striped = "" if style_block.string is None else re.sub(r"[\n\r\t ]+", " ", style_block.string.strip())
-    
+    striped = re.sub(r"/\*(?:.|[\n\r])*?\*/", "", striped)
     return re.findall(regex1 + '|' + regex2, striped, re.IGNORECASE)
     
 def _is_media_block(block: str) -> bool:
