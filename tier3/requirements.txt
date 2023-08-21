@@ -1,0 +1,9 @@
+cython==0.29.32
+pylru
+pygments
+pyyaml
+setproctitle
+termcolor
+watchdog
+beautifulsoup4
+selenium
