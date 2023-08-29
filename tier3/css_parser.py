@@ -39,6 +39,9 @@ def _parse_css_block(block: str) -> list:
         if not attr.strip():
             continue
         
+        if attr.count(':') == 0:
+            continue
+        
         colon_index = attr.index(":")
         
         key = attr[0:colon_index].strip()
@@ -137,6 +140,10 @@ def parse_inline_css(tag):
     for attr in inline_css.split(';'):
         if not attr.strip():
             continue
+        
+        if attr.count(':') == 0:
+            continue
+        
         colon_index = attr.index(":")
         attr_name = attr[0:colon_index].strip()
         attr_value = attr[colon_index + 1:].strip()
