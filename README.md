@@ -1,38 +1,47 @@
-# Tạo image judge
+## Tạo image judge
 
 Chạy lệnh `make funix`.
 
-Lệnh này sẽ tạo image judge tier 3 của dmoj + các file và package thêm như bs4, HTML executor (fake), chrome driver, utils.
+Lệnh này sẽ tạo image judge tier 3 của dmoj và thêm:
 
-# Tạo container judge
+- Các packages: 
+    - `selenium`, `google-chrome-stable`, `beautifulsoup4`: để chấm các bài html, css.
 
+- Các files: 
+    - `HTML.py`: executor cho các bài html, css (thực ra chỉ là python executor) 
+    - `chrome_driver.py`, `css_parser.py`: các utils để chấm bài html, css
+    - `_cptbox.pyx`: dùng để override file gốc để fix lỗi cython. 
 
-### Tạo judge
+---
+
+## Tạo container judge
 
 Nguồn: https://docs.dmoj.ca/#/judge/setting_up_a_judge
 
+Ví dụ: 
+
 ```shell copy
 sudo docker run \
-    --name jd1 \
-    -p "$(ip addr show dev wlp2s0 | perl -ne 'm@inet (.*)/.*@ and print$1 and exit')":9998:9998 \
-    -v /projects/foj/problems:/problems \
+    --name jd2 \
+    -p "$(ip addr show dev ens5 | perl -ne 'm@inet (.*)/.*@ and print$1 and exit')":9997:9997 \
+    -v /projects/site/problems:/problems \
     --cap-add=SYS_PTRACE \
     -d \
     --restart=always \
     judge:latest \
     run -p "9999" -c /problems/judge.yml \
-    "$(ip addr show dev wlp2s0 | perl -ne 'm@inet (.*)/.*@ and print$1 and exit')" "jd1" "WVA11ok8bEM0gB/jqyCpst7IiNcnc2F0vo72Gbu9Zd8eeKNj4Td1rX52p0w7j5uNNzZtpJx8fPlf/+GPeGaBGiKb3sGiLHSBwhhy"
+    "$(ip addr show dev ens5 | perl -ne 'm@inet (.*)/.*@ and print$1 and exit')" "jd2" "5cwKWowy5LGziKUf5JracyiayYY+Ty+N8VAo/cxL8HhLUZBRyu3PbOcAO4FNdjRmVrrKv9TK664PG1QgoRedIJYc7om8j+NyjgTP"
 ```
 
-# Hướng dẫn cách viết file chấm html:
+## Hướng dẫn cách viết file chấm html:
 
 1 html/css problem gồm:
 
-- init.yml
-- file .py là file checker
-- file .zip chứa các file chứa nội dung tiêu chí (criteria)
+- `init.yml`
+- file `.py` là file checker
+- file `.zip` chứa các file chứa nội dung tiêu chí (criteria)
 
-Ví dụ 1 problem, có code là `problem01`:
+Ví dụ problem có code `problem01`:
 
 - Criteria 1: "Thẻ h1 có nội dung 'Hello world'"
 - Criteria 2: "Thẻ h2 có nội dung 'Cat'"
@@ -56,7 +65,7 @@ HTML mẫu:
 
 ### 1. Tạo folder có tên `problem01`
 
-### 2. Trong folder vừa tạo, tạo file init.yml có nội dung như sau:
+### 2. Trong folder vừa tạo, tạo file `init.yml` có nội dung như sau:
 
 ```yml
 checker: problem01.py # tên file checker
@@ -155,7 +164,7 @@ Có thể check kỹ hơn.
 ### 5. Hoàn tất
 
 Copy vào thư mục `problem01` vào thư mục chứa problem data `problems`.
-Vào path `/problem/problem01` click `Upate problem data (beta)` để cập nhật nội dung criterias cho problem.
+Vào path `/problem/problem01` click `Upate problem data (beta)` để cập nhật nội dung criteria cho problem.
 Restart lại Judge nếu cần.
 
 
