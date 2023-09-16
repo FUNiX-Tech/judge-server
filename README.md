@@ -1,9 +1,28 @@
-# judge-server
+# Tạo image judge
 
-- Copy file `HTML.py` vào thư mục `docker:/judge/dmoj/executors`.
-- Cài bs4 cho docker: `(DMOJ) pip install beautifulsoup4`
-- Copy file `css_parser.py` vào `docker:/judge/dmoj/utils`
-- `\_cptbox.pyx` là để fix tạm thời lỗi cài đặt judge-server nếu có lỗi xảy ra liên quan `cython`.
+Chạy lệnh `make funix`.
+
+Lệnh này sẽ tạo image judge tier 3 của dmoj + các file và package thêm như bs4, HTML executor (fake), chrome driver, utils.
+
+# Tạo container judge
+
+
+### Tạo judge
+
+Nguồn: https://docs.dmoj.ca/#/judge/setting_up_a_judge
+
+```shell copy
+sudo docker run \
+    --name jd1 \
+    -p "$(ip addr show dev wlp2s0 | perl -ne 'm@inet (.*)/.*@ and print$1 and exit')":9998:9998 \
+    -v /projects/foj/problems:/problems \
+    --cap-add=SYS_PTRACE \
+    -d \
+    --restart=always \
+    judge:latest \
+    run -p "9999" -c /problems/judge.yml \
+    "$(ip addr show dev wlp2s0 | perl -ne 'm@inet (.*)/.*@ and print$1 and exit')" "jd1" "WVA11ok8bEM0gB/jqyCpst7IiNcnc2F0vo72Gbu9Zd8eeKNj4Td1rX52p0w7j5uNNzZtpJx8fPlf/+GPeGaBGiKb3sGiLHSBwhhy"
+```
 
 # Hướng dẫn cách viết file chấm html:
 
@@ -138,3 +157,5 @@ Có thể check kỹ hơn.
 Copy vào thư mục `problem01` vào thư mục chứa problem data `problems`.
 Vào path `/problem/problem01` click `Upate problem data (beta)` để cập nhật nội dung criterias cho problem.
 Restart lại Judge nếu cần.
+
+
