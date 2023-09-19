@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 from dmoj.result import CheckerResult
-from dmoj.utils.unicode import utf8text
 
 def check(process_output, judge_output, judge_input, point_value, submission_source, **kwargs):
     input = judge_input.decode('utf-8').strip()
